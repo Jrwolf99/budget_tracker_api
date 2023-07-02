@@ -8,9 +8,11 @@ Rails.application.routes.draw do
       post '/transactions/upload', to: 'transactions#upload'
       put '/transactions/update_row_notes', to: 'transactions#update_row_notes'
       put '/transactions/update_row_category', to: 'transactions#update_row_category'
-      
       get '/transactions/category_detailed_list', to: 'transactions#category_detailed_list'
 
+
+
+      resources :categories, only: [:index]
     end
   end
 
