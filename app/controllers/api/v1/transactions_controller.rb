@@ -4,13 +4,15 @@ require 'rack'
 class Api::V1::TransactionsController < ApplicationController
  
   def index
-
     puts "params: #{params}"
-    puts "params[:month]: #{params[:month]}"
-    puts "params[:year]: #{params[:year]}"
-
-    transactions =  Transaction.order(transaction_date: :desc).where(month: params[:month], year: params[:year])
-
+    case params[:category_id]
+    when 'all'
+      transactions = Transaction.order(transaction_date: :desc).where(month: params[:month], year: params[:year])
+    when 'uncategorized'
+      transactions = Transaction.order(transaction_date: :desc).where(month: params[:month], year: params[:year], category_id: nil)
+    else
+      transactions = Transaction.order(transaction_date: :desc).where(month: params[:month], year: params[:year], category_id: params[:category_id])
+    end
 
     render json: transactions,
     each_serializer: TransactionSerializer, 
@@ -42,16 +44,57 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-  def update_row_notes
+  def set_notes
     transaction = Transaction.find(params[:id])
     transaction.update!(notes: params[:notes])
     render json: { message: 'Notes updated successfully' }
   end
 
-  def update_row_category
+  def set_category
     transaction = Transaction.find(params[:id])
-    transaction.update!(category: params[:category])
+    transaction.update!(category_id: params[:category_id])
     render json: { message: 'Category updated successfully' }
   end
+
+
+
+  def get_totals_by_category
+
+
+    total_monthly_expense_amount = Transaction.where(month: params[:month], year: params[:year])
+                                              .where.not(category_id:5)
+                                              .where.not(category_id: 8)
+                                              .where.not(category_id: 11)
+                                              .where.not(category_id: 12)
+                                              .sum(:amount).abs.to_f
+
+
+    totals_by_category = Transaction.where(month: params[:month], year: params[:year])
+                                    .where.not(category_id: 5)
+                                    .where.not(category_id: 8)
+                                    .where.not(category_id: 11)
+                                    .where.not(category_id: 12)
+                                    .group(:category_id)
+                                    .sum(:amount)
+  
+    result = totals_by_category.map do |category_id, value|
+      
+      goal = Goal.find_by(month: params[:month], year: params[:year], category_id: category_id)&.goal_amount.to_f
+      absolute_value = value.abs.to_f
+      percentage = (absolute_value / total_monthly_expense_amount * 100).round(0)
+  
+      { 
+        category: Category.find(category_id).category_name,
+        value: absolute_value,
+        goal: goal,
+        percentage: percentage || 0
+      }
+    end
+  
+    render json: result.sort_by { |item| item[:percentage] }
+  end
+  
+
+
 
 end

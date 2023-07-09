@@ -6,13 +6,17 @@ Rails.application.routes.draw do
 
       resources :transactions, only: [:index]
       post '/transactions/upload', to: 'transactions#upload'
-      put '/transactions/update_row_notes', to: 'transactions#update_row_notes'
-      put '/transactions/update_row_category', to: 'transactions#update_row_category'
+      put '/transactions/set_notes', to: 'transactions#set_notes'
+      put '/transactions/set_category', to: 'transactions#set_category'
       get '/transactions/category_detailed_list', to: 'transactions#category_detailed_list'
-
-
-
+      get '/transactions/get_totals_by_category', to: 'transactions#get_totals_by_category'
+      
+      
       resources :categories, only: [:index]
+
+      resources :goals, only: [:index]
+      post '/goals/update_or_create_goal', to: 'goals#update_or_create_goal'
+
     end
   end
 

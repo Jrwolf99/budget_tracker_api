@@ -7,7 +7,8 @@ categories = [
     "Subscriptions",
     "Refunds",
     "Rent",
-    "Utilities"
+    "Utilities",
+    "Transfers"
   ]
   
   categories.each do |category_name|
