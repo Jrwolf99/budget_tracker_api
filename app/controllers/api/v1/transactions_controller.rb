@@ -59,26 +59,16 @@ class Api::V1::TransactionsController < ApplicationController
 
 
   def get_totals_by_category
-
-
     total_monthly_expense_amount = Transaction.where(month: params[:month], year: params[:year])
-                                              .where.not(category_id:5)
-                                              .where.not(category_id: 8)
-                                              .where.not(category_id: 11)
-                                              .where.not(category_id: 12)
+                                              .where.not(category_id: [5, 8, 11, 12])
                                               .sum(:amount).abs.to_f
-
-
+  
     totals_by_category = Transaction.where(month: params[:month], year: params[:year])
-                                    .where.not(category_id: 5)
-                                    .where.not(category_id: 8)
-                                    .where.not(category_id: 11)
-                                    .where.not(category_id: 12)
+                                    .where.not(category_id: [5, 8, 11, 12])
                                     .group(:category_id)
                                     .sum(:amount)
   
     result = totals_by_category.map do |category_id, value|
-      
       goal = Goal.find_by(month: params[:month], year: params[:year], category_id: category_id)&.goal_amount.to_f
       absolute_value = value.abs.to_f
       percentage = (absolute_value / total_monthly_expense_amount * 100).round(0)
@@ -91,7 +81,8 @@ class Api::V1::TransactionsController < ApplicationController
       }
     end
   
-    render json: result.sort_by { |item| item[:percentage] }
+    
+    render json: result, status: :ok
   end
   
 
