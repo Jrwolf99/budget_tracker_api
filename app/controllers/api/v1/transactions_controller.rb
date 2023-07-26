@@ -3,15 +3,15 @@ require 'rack'
 
 class Api::V1::TransactionsController < ApplicationController
   def index
-    transactions = case params[:category_id]
-                   when 'all'
-                     Transaction.order(transaction_date: :desc).where(year: params[:year])
+    transactions = Transaction.order(transaction_date: :desc)
+
+    transactions = case params[:category_id]  
+                    when 'all'
+                      transactions.in_month_and_year(params[:month], params[:year])
                    when 'uncategorized'
-                     Transaction.order(transaction_date: :desc).where(month: params[:month], year: params[:year],
-                                                                      category_id: nil)
+                     transactions.in_month_and_year(params[:month], params[:year]).uncategorized
                    else
-                     Transaction.order(transaction_date: :desc).where(month: params[:month], year: params[:year],
-                                                                      category_id: params[:category_id])
+                     transactions.in_month_and_year(params[:month], params[:year]).with_category(params[:category_id])
                    end
 
     render json: transactions,
@@ -29,8 +29,8 @@ class Api::V1::TransactionsController < ApplicationController
       csv_data = uploaded_file.read
       csv = CSV.parse(csv_data, headers: true)
       csv.each do |row|
-
         next if row['Transaction Date'].nil? || row['Transaction Date'].empty?
+
         description = row['Transaction Description'] || row['Description']
         amount = row['Transaction Amount'] || (row['Debit'].to_f * -1) || 0.0
         transaction_date = parse_transaction_date(row['Transaction Date'])
@@ -86,7 +86,10 @@ class Api::V1::TransactionsController < ApplicationController
   end
 
   def get_totals_by_category
-    render json: get_totals_by_category, status: :ok
+    render json: Transaction.get_totals_by_category(
+      params[:month],
+      params[:year]
+    ), status: :ok
   end
 
   private
