@@ -31,7 +31,7 @@ class Api::V1::TransactionsController < ApplicationController
       csv = CSV.parse(csv_data, headers: true)
       csv.each do |row|
         description = row['Transaction Description'] || row['Description']
-        amount = row['Transaction Amount'] || row['Debit'] || 0.0
+        amount = row['Transaction Amount'] || -row['Debit'] || 0.0
         transaction_date = parse_transaction_date(row['Transaction Date'])
         next if transaction_date.year < 2022
 
@@ -55,15 +55,15 @@ class Api::V1::TransactionsController < ApplicationController
                status: :ok
 
       elsif errored_transactions.empty? && !duplicate_transactions.empty?
-        render json: { message: "CSV processed with no errors but there were #{duplicate_transactions.count} duplicates. Total count was #{total_count}." },
+        render json: { message: "CSV processed with no errors but there were #{duplicate_transactions.count} duplicates. Total count was #{total_count}. Total count added was #{total_count - duplicate_transactions.count}." },
                status: :ok
 
       elsif !errored_transactions.empty? && duplicate_transactions.empty?
-        render json: { message: "CSV processed with #{errored_transactions.count} errors and no duplicates. Total count was #{total_count}." },
+        render json: { message: "CSV processed with #{errored_transactions.count} errors and no duplicates. Total count was #{total_count}. Total count added was #{total_count - errored_transactions.count}." },
                status: :ok
 
       else
-        render json: { message: "CSV processed with #{errored_transactions.count} errors and #{duplicate_transactions.count} duplicates. Total count was #{total_count}." },
+        render json: { message: "CSV processed with #{errored_transactions.count} errors and #{duplicate_transactions.count} duplicates. Total count was #{total_count}. Total count added was #{total_count - errored_transactions.count - duplicate_transactions.count}." },
                status: :ok
       end
 
