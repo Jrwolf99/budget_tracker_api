@@ -9,8 +9,7 @@ Rails.application.routes.draw do
       put '/transactions/set_notes', to: 'transactions#set_notes'
       put '/transactions/set_category', to: 'transactions#set_category'
       get '/transactions/category_detailed_list', to: 'transactions#category_detailed_list'
-      get '/transactions/get_totals_by_category', to: 'transactions#get_totals_by_category'
-      
+      get '/transactions/get_list_of_categories_with_monthly_expenses', to: 'transactions#get_list_of_categories_with_monthly_expenses'
       
       resources :categories, only: [:index]
 

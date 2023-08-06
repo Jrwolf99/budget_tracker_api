@@ -3,10 +3,12 @@ class Transaction < ApplicationRecord
 
   scope :in_month_and_year, ->(month, year) { month == 'all' ? where(year:) : where(month:, year:) }
   scope :excluding_categories, ->(category_ids) { where.not(category_id: category_ids) }
-  scope :with_category, ->(category_id) { where(category_id:) }
+  scope :with_category, ->(category_identifier) {
+                            where(category_id: Category.find_by(identifier: category_identifier).id)
+                            }
   scope :uncategorized, -> { where(category_id: nil) }
 
-  def self.get_totals_by_category(month, year)
+  def self.get_list_of_categories_with_monthly_expenses(month, year)
     total_monthly_expense_amount = in_month_and_year(month, year)
                                    .excluding_categories([5, 8, 11, 12])
                                    .sum(:amount).abs.to_f
@@ -29,4 +31,14 @@ class Transaction < ApplicationRecord
       }
     end
   end
+
+
+
+  def self.get_all_expenses_by_category_by_month(month, year, category_identifier)
+    in_month_and_year(month, year)
+      .with_category(category_identifier)
+      .sum(:amount).abs.to_f
+  end
+  
+
 end

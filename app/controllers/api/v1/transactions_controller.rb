@@ -5,13 +5,13 @@ class Api::V1::TransactionsController < ApplicationController
   def index
     transactions = Transaction.order(transaction_date: :desc)
 
-    transactions = case params[:category_id]  
+    transactions = case params[:category_identifier]  
                     when 'all'
                       transactions.in_month_and_year(params[:month], params[:year])
                    when 'uncategorized'
                      transactions.in_month_and_year(params[:month], params[:year]).uncategorized
                    else
-                     transactions.in_month_and_year(params[:month], params[:year]).with_category(params[:category_id])
+                     transactions.in_month_and_year(params[:month], params[:year]).with_category(params[:category_identifier])
                    end
 
     render json: transactions,
@@ -85,12 +85,14 @@ class Api::V1::TransactionsController < ApplicationController
     render json: { message: 'Category updated successfully' }
   end
 
-  def get_totals_by_category
-    render json: Transaction.get_totals_by_category(
+  def get_list_of_categories_with_monthly_expenses
+    render json: Transaction.get_list_of_categories_with_monthly_expenses(
       params[:month],
       params[:year]
     ), status: :ok
   end
+
+
 
   private
 
