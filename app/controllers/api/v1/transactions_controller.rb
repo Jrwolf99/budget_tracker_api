@@ -20,17 +20,6 @@ class Api::V1::TransactionsController < ApplicationController
            status: :ok
   end
 
-  def upload
-    uploaded_file = params[:file]
-  
-    render json: { error: 'Invalid file format. Please upload a CSV file.' }, status: :unprocessable_entity unless valid_csv_file?(uploaded_file)
-
-    errored_transactions, duplicate_transactions, total_count = process_csv(uploaded_file.read)
-  
-    message = generate_response_message(total_count, errored_transactions, duplicate_transactions)
-    render json: { message: message }, status: :ok
-  end
-   
   def set_notes
     transaction = Transaction.find(params[:id])
     transaction.update!(notes: params[:notes])
@@ -50,12 +39,19 @@ class Api::V1::TransactionsController < ApplicationController
     ), status: :ok
   end
 
+  def upload
+    uploaded_file = params[:file]
+  
+    render json: { error: 'Invalid file format. Please upload a CSV file.' }, status: :unprocessable_entity unless uploaded_file.content_type == 'text/csv'
+
+    errored_transactions, duplicate_transactions, total_count = process_csv(uploaded_file.read)
+  
+    message = generate_response_message(total_count, errored_transactions, duplicate_transactions)
+    render json: { message: message }, status: :ok
+  end
+
   private
 
-
-  def valid_csv_file?(file)
-    file.content_type == 'text/csv'
-  end
   
   def process_csv(csv_data)
     errored_transactions = []
@@ -63,21 +59,7 @@ class Api::V1::TransactionsController < ApplicationController
     total_count = 0
   
     CSV.parse(csv_data, headers: true).each do |row|
-
-
-      puts "
-      
-      
-      #{row}
-
-      "
-
       next unless valid_transaction_date?(row['Transaction Date'])
-
-      puts "Processing row: #{row}
-      
-      
-      "
 
       transaction = build_transaction_from_row(row)
       total_count += 1
@@ -127,7 +109,6 @@ class Api::V1::TransactionsController < ApplicationController
     transaction_date.year >= 2022
   end
 
-
   def generate_response_message(total_count, errored_transactions, duplicate_transactions)
     if errored_transactions.empty? && duplicate_transactions.empty?
       "CSV processed with no errors and no duplicates. Total count was #{total_count}."
@@ -143,10 +124,10 @@ class Api::V1::TransactionsController < ApplicationController
 
   def parse_transaction_date(date_str)
     Date.strptime(date_str, '%Y-%m-%d')
-  rescue ArgumentError
+  rescue StandardError
     begin
       Date.strptime(date_str, '%m/%d/%y')
-    rescue ArgumentError
+    rescue StandardError
       nil
     end
   end
