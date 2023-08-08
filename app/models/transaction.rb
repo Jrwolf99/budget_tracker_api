@@ -1,7 +1,7 @@
 class Transaction < ApplicationRecord
   belongs_to :category, optional: true
 
-  scope :in_month_and_year, ->(month, year) { month == 'all' ? where(year:) : where(month:, year:) }
+  scope :in_month_and_year, ->(month, year) {(month == 'all' || month == 0) ? where(year:) : where(month:, year:) }
   scope :excluding_categories, ->(category_ids) { where.not(category_id: category_ids) }
   scope :with_category, ->(category_identifier) {
                             where(category_id: Category.find_by(identifier: category_identifier).id)
@@ -19,17 +19,17 @@ class Transaction < ApplicationRecord
                          .sum(:amount)
 
     totals_by_category.map do |category_id, value|
+      month = 0 if month == 'all'
       goal = Goal.find_by(month:, year:, category_id:)&.goal_amount.to_f
       absolute_value = value.abs.to_f
       percentage = (absolute_value / total_monthly_expense_amount * 100).round(0)
-
       {
         category: Category.find(category_id).category_name,
         value: absolute_value,
         goal:,
         percentage: percentage || 0
       }
-    end
+    end.sort_by { |category| category[:percentage] }.reverse
   end
 
 
