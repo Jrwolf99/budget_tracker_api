@@ -22,58 +22,15 @@ class Api::V1::TransactionsController < ApplicationController
 
   def upload
     uploaded_file = params[:file]
-    errored_transactions = []
-    duplicate_transactions = []
-    total_count = 0
+  
+    render json: { error: 'Invalid file format. Please upload a CSV file.' }, status: :unprocessable_entity unless valid_csv_file?(uploaded_file)
 
-    if uploaded_file.content_type == 'text/csv'
-      csv_data = uploaded_file.read
-      csv = CSV.parse(csv_data, headers: true)
-      csv.each do |row|
-        next if row['Transaction Date'].nil? || row['Transaction Date'].empty?
-
-        description = row['Transaction Description'] || row['Description']
-        amount = row['Transaction Amount'] || (row['Debit'].to_f * -1) || 0.0
-        transaction_date = parse_transaction_date(row['Transaction Date'])
-        next if transaction_date.year < 2022
-
-        year = transaction_date.year
-        month = transaction_date.month
-
-        total_count += 1
-        begin
-          Transaction.create(description:, amount:, transaction_date:, year:, month:)
-        rescue ActiveRecord::RecordNotUnique => e
-          puts "Skipping duplicate transaction: #{description}, #{amount}, #{transaction_date}"
-          duplicate_transactions << { description:, amount:, transaction_date: }
-        rescue StandardError => e
-          puts "Error creating transaction: #{description}, #{amount}, #{transaction_date}"
-          errored_transactions << { description:, amount:, transaction_date: }
-        end
-      end
-
-      if errored_transactions.empty? && duplicate_transactions.empty?
-        render json: { message: "CSV processed with no errors and no duplicates. Total count was #{total_count}." },
-               status: :ok
-
-      elsif errored_transactions.empty? && !duplicate_transactions.empty?
-        render json: { message: "CSV processed with no errors but there were #{duplicate_transactions.count} duplicates. Total count was #{total_count}. Total count added was #{total_count - duplicate_transactions.count}." },
-               status: :ok
-
-      elsif !errored_transactions.empty? && duplicate_transactions.empty?
-        render json: { message: "CSV processed with #{errored_transactions.count} errors and no duplicates. Total count was #{total_count}. Total count added was #{total_count - errored_transactions.count}." },
-               status: :ok
-
-      else
-        render json: { message: "CSV processed with #{errored_transactions.count} errors and #{duplicate_transactions.count} duplicates. Total count was #{total_count}. Total count added was #{total_count - errored_transactions.count - duplicate_transactions.count}." },
-               status: :ok
-      end
-
-    else
-      render json: { error: 'Invalid file format. Please upload a CSV file.' }, status: :unprocessable_entity
-    end
+    errored_transactions, duplicate_transactions, total_count = process_csv(uploaded_file.read)
+  
+    message = generate_response_message(total_count, errored_transactions, duplicate_transactions)
+    render json: { message: message }, status: :ok
   end
-
+   
   def set_notes
     transaction = Transaction.find(params[:id])
     transaction.update!(notes: params[:notes])
@@ -94,6 +51,95 @@ class Api::V1::TransactionsController < ApplicationController
   end
 
   private
+
+
+  def valid_csv_file?(file)
+    file.content_type == 'text/csv'
+  end
+  
+  def process_csv(csv_data)
+    errored_transactions = []
+    duplicate_transactions = []
+    total_count = 0
+  
+    CSV.parse(csv_data, headers: true).each do |row|
+
+
+      puts "
+      
+      
+      #{row}
+
+      "
+
+      next unless valid_transaction_date?(row['Transaction Date'])
+
+      puts "Processing row: #{row}
+      
+      
+      "
+
+      transaction = build_transaction_from_row(row)
+      total_count += 1
+  
+      begin
+        Transaction.create(transaction)
+      rescue ActiveRecord::RecordNotUnique => e
+        puts "Skipping duplicate transaction: #{transaction}"
+        duplicate_transactions << transaction
+      rescue StandardError => e
+        puts "Error creating transaction: #{transaction}"
+        errored_transactions << transaction
+      end
+    end
+  
+    [errored_transactions, duplicate_transactions, total_count]
+  end
+  
+  def build_transaction_from_row(row)
+    description = row['Transaction Description'] || row['Description']
+
+
+    if row['Transaction Amount']
+      amount = row['Transaction Amount']
+    else
+      debit_amount = row['Debit'].to_f
+      credit_amount = row['Credit'].to_f
+    
+      if debit_amount != 0
+        amount = -debit_amount
+      else
+        amount = credit_amount
+      end
+    end
+    
+    transaction_date = parse_transaction_date(row['Transaction Date'])
+    year = transaction_date.year
+    month = transaction_date.month
+  
+    { description:, amount:, transaction_date:, year:, month: }
+  end
+  
+  def valid_transaction_date?(date)
+    return false if date.nil? || date.empty?
+    
+    transaction_date = parse_transaction_date(date)
+    transaction_date.year >= 2022
+  end
+
+
+  def generate_response_message(total_count, errored_transactions, duplicate_transactions)
+    if errored_transactions.empty? && duplicate_transactions.empty?
+      "CSV processed with no errors and no duplicates. Total count was #{total_count}."
+    elsif errored_transactions.empty?
+      "CSV processed with no errors but there were #{duplicate_transactions.count} duplicates. Total count was #{total_count}. Total count added was #{total_count - duplicate_transactions.count}."
+    elsif duplicate_transactions.empty?
+      "CSV processed with #{errored_transactions.count} errors and no duplicates. Total count was #{total_count}. Total count added was #{total_count - errored_transactions.count}."
+    else
+      "CSV processed with #{errored_transactions.count} errors and #{duplicate_transactions.count} duplicates. Total count was #{total_count}. Total count added was #{total_count - errored_transactions.count - duplicate_transactions.count}."
+    end
+  end
+
 
   def parse_transaction_date(date_str)
     Date.strptime(date_str, '%Y-%m-%d')
