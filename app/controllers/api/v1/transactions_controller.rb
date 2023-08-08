@@ -12,7 +12,7 @@ class Api::V1::TransactionsController < ApplicationController
                      transactions.in_month_and_year(params[:month], params[:year]).uncategorized
                    else
                      transactions.in_month_and_year(params[:month],
-                                                    params[:year]).with_category(params[:category_identifier])
+                                                    params[:year]).where_category(params[:category_identifier])
                    end
 
     render json: transactions,
@@ -65,12 +65,19 @@ class Api::V1::TransactionsController < ApplicationController
       total_count += 1
   
       begin
-        Transaction.create(transaction)
-      rescue ActiveRecord::RecordNotUnique => e
-        puts "Skipping duplicate transaction: #{transaction}"
-        duplicate_transactions << transaction
+        Transaction.transaction do
+          unique_attributes = transaction.slice(:description, :transaction_date, :year, :month) 
+          
+          existing_transaction = Transaction.find_by(unique_attributes)
+          
+          if existing_transaction.nil?
+            existing_transaction = Transaction.create!(transaction)
+          end
+      
+          duplicate_transactions << transaction unless existing_transaction.new_record?
+        end
       rescue StandardError => e
-        puts "Error creating transaction: #{transaction}"
+        puts "Error creating/updating transaction: #{transaction}"
         errored_transactions << transaction
       end
     end
