@@ -10,7 +10,8 @@ Rails.application.routes.draw do
       put '/transactions/set_category', to: 'transactions#set_category'
       get '/transactions/category_detailed_list', to: 'transactions#category_detailed_list'
       get '/transactions/get_list_of_categories_with_monthly_expenses', to: 'transactions#get_list_of_categories_with_monthly_expenses'
-      
+      get '/transactions/get_overview_report', to: 'transactions#get_overview_report'
+
       resources :categories, only: [:index]
 
       resources :goals, only: [:index]

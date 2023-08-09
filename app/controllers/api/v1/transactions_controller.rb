@@ -39,82 +39,28 @@ class Api::V1::TransactionsController < ApplicationController
     ), status: :ok
   end
 
+  def get_overview_report
+    render json: Transaction.get_overview_report(params[:year]), status: :ok
+  end
+
   def upload
     uploaded_file = params[:file]
   
     render json: { error: 'Invalid file format. Please upload a CSV file.' }, status: :unprocessable_entity unless uploaded_file.content_type == 'text/csv'
 
-    errored_transactions, duplicate_transactions, total_count = process_csv(uploaded_file.read)
+    errored_transactions, duplicate_transactions, total_count = TransactionCsvProcessor.new.process_csv(uploaded_file.read)
   
+    puts "Total count: #{total_count}"
+    puts "Errored transactions: #{errored_transactions.count}"
+    puts "Duplicate transactions: #{duplicate_transactions.count}"
+
+
+
     message = generate_response_message(total_count, errored_transactions, duplicate_transactions)
     render json: { message: message }, status: :ok
   end
 
   private
-
-  
-  def process_csv(csv_data)
-    errored_transactions = []
-    duplicate_transactions = []
-    total_count = 0
-  
-    CSV.parse(csv_data, headers: true).each do |row|
-      next unless valid_transaction_date?(row['Transaction Date'])
-
-      transaction = build_transaction_from_row(row)
-      total_count += 1
-  
-      begin
-        Transaction.transaction do
-          unique_attributes = transaction.slice(:description, :transaction_date, :year, :month) 
-          
-          existing_transaction = Transaction.find_by(unique_attributes)
-          
-          if existing_transaction.nil?
-            existing_transaction = Transaction.create!(transaction)
-          end
-      
-          duplicate_transactions << transaction unless existing_transaction.new_record?
-        end
-      rescue StandardError => e
-        puts "Error creating/updating transaction: #{transaction}"
-        errored_transactions << transaction
-      end
-    end
-  
-    [errored_transactions, duplicate_transactions, total_count]
-  end
-  
-  def build_transaction_from_row(row)
-    description = row['Transaction Description'] || row['Description']
-
-
-    if row['Transaction Amount']
-      amount = row['Transaction Amount']
-    else
-      debit_amount = row['Debit'].to_f
-      credit_amount = row['Credit'].to_f
-    
-      if debit_amount != 0
-        amount = -debit_amount
-      else
-        amount = credit_amount
-      end
-    end
-    
-    transaction_date = parse_transaction_date(row['Transaction Date'])
-    year = transaction_date.year
-    month = transaction_date.month
-  
-    { description:, amount:, transaction_date:, year:, month: }
-  end
-  
-  def valid_transaction_date?(date)
-    return false if date.nil? || date.empty?
-    
-    transaction_date = parse_transaction_date(date)
-    transaction_date.year >= 2022
-  end
 
   def generate_response_message(total_count, errored_transactions, duplicate_transactions)
     if errored_transactions.empty? && duplicate_transactions.empty?
@@ -128,14 +74,4 @@ class Api::V1::TransactionsController < ApplicationController
     end
   end
 
-
-  def parse_transaction_date(date_str)
-    Date.strptime(date_str, '%Y-%m-%d')
-  rescue StandardError
-    begin
-      Date.strptime(date_str, '%m/%d/%y')
-    rescue StandardError
-      nil
-    end
-  end
 end

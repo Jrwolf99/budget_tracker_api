@@ -10,16 +10,18 @@ class Transaction < ApplicationRecord
 
 
   def self.get_list_of_categories_with_monthly_expenses(month, year)
+    
     total_monthly_expense_amount = in_month_and_year(month, year)
-                                    .join(:categories)
-                                    .excluding_categories
-                                   .sum(:amount).abs.to_f
+                                  .joins(:category)
+                                  .merge(Category.excluding_categories)
+                                  .sum(:amount).abs.to_f
 
     totals_by_category = in_month_and_year(month, year)
-                                    .join(:categories)
-                                    .excluding_categories
-                                    .group(:category_id)
-                                    .sum(:amount)
+                        .joins(:category)
+                        .merge(Category.excluding_categories)
+                        .group('categories.id')
+                        .sum(:amount)
+
 
     totals_by_category.map do |category_id, value|
       month = 0 if month == 'all'
@@ -36,17 +38,34 @@ class Transaction < ApplicationRecord
   end
 
 
+  def self.get_overview_report(year)
+    result = []
+    (0..12).each do |month|
+      month = 0 if month == 'all'
+      total_expenses = in_month_and_year(month, year)
+                       .joins(:category)
+                       .merge(Category.excluding_categories)
+                       .sum(:amount).abs.to_f
 
-  def self.get_all_expenses_by_category_by_month(month, year, category_identifier)
-    in_month_and_year(month, year)
-      .where_category(category_identifier)
-      .sum(:amount).abs.to_f
-  end
-  
+      total_income = in_month_and_year(month, year)
+                     .joins(:category)
+                     .merge(Category.where(identifier: 'income'))
+                     .sum(:amount).abs.to_f
 
-  def self.get_all_expenses_by_month(month, year)
-    in_month_and_year(month, year)
-    .sum(:amount).abs.to_f
+      total_profit = (total_income - total_expenses).round(2)
+
+      profit_margin = (total_profit / total_income * 100).round(2)
+
+      result << {
+        month:,
+        total_expenses:,
+        total_income:,
+        total_profit:,
+        profit_margin:,
+      }
+    end
+    result
   end
 
 end
+
