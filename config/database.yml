@@ -12,10 +12,10 @@ development:
 
 test:
   <<: *default
-  database: my_api_test
+  database: budget_tracker_api_db_test
 
 production:
   <<: *default
-  database: my_api_production
+  database: budget_tracker_api_db_prod
   username: my_api
   password: <%= ENV['DATABASE_PASSWORD'] %>
