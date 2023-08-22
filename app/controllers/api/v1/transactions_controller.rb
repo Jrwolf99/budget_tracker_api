@@ -11,6 +11,7 @@ class Api::V1::TransactionsController < ApplicationController
                    when 'uncategorized'
                      transactions.in_month_and_year(params[:month], params[:year]).uncategorized
                    else
+                  
                      transactions.in_month_and_year(params[:month],
                                                     params[:year]).where_category(params[:category_identifier])
                    end
@@ -50,12 +51,6 @@ class Api::V1::TransactionsController < ApplicationController
 
     errored_transactions, duplicate_transactions, total_count = TransactionCsvProcessor.new.process_csv(uploaded_file.read)
   
-    puts "Total count: #{total_count}"
-    puts "Errored transactions: #{errored_transactions.count}"
-    puts "Duplicate transactions: #{duplicate_transactions.count}"
-
-
-
     message = generate_response_message(total_count, errored_transactions, duplicate_transactions)
     render json: { message: message }, status: :ok
   end

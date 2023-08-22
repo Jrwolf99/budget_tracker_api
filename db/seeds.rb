@@ -1,4 +1,6 @@
 categories = {
+  "all": "All",
+  "uncategorized": "Uncategorized",
   "food": "Food",
   "goods": "Goods",
   "insurance": "Insurance",
@@ -13,5 +15,6 @@ categories = {
   "fun_activities": "Fun Activities"
 }
   categories.each do |key, value|
+    next if Category.find_by(identifier: key)
     Category.create(category_name: value, identifier: key)
   end
