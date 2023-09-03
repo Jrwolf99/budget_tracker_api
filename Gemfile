@@ -20,8 +20,9 @@ gem 'active_model_serializers'
 
 gem 'dotenv-rails', groups: [:development, :test]
 
+gem 'delayed_job_active_record'
 
-
+gem 'sendgrid-ruby'
 
 
 # Build JSON APIs with ease [https://github.com/rails/jbuilder]
@@ -58,5 +59,10 @@ end
 group :development do
   gem 'better_errors'
   gem 'binding_of_caller'
+  gem 'pry-rails'
 end
 
+
+gem "authentication-zero", "~> 2.16"
+# Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
+gem "bcrypt", "~> 3.1.7"

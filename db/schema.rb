@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_07_27_034812) do
+ActiveRecord::Schema[7.0].define(version: 2023_08_30_043408) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -19,6 +19,26 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_27_034812) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "identifier"
+  end
+
+  create_table "delayed_jobs", force: :cascade do |t|
+    t.integer "priority", default: 0, null: false
+    t.integer "attempts", default: 0, null: false
+    t.text "handler", null: false
+    t.text "last_error"
+    t.datetime "run_at"
+    t.datetime "locked_at"
+    t.datetime "failed_at"
+    t.string "locked_by"
+    t.string "queue"
+    t.datetime "created_at"
+    t.datetime "updated_at"
+    t.index ["priority", "run_at"], name: "delayed_jobs_priority"
+  end
+
+  create_table "email_verification_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_email_verification_tokens_on_user_id"
   end
 
   create_table "goals", force: :cascade do |t|
@@ -30,6 +50,20 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_27_034812) do
     t.datetime "updated_at", null: false
     t.index ["category_id", "month", "year"], name: "index_goals_on_category_id_and_month_and_year", unique: true
     t.index ["category_id"], name: "index_goals_on_category_id"
+  end
+
+  create_table "password_reset_tokens", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.index ["user_id"], name: "index_password_reset_tokens_on_user_id"
+  end
+
+  create_table "sessions", force: :cascade do |t|
+    t.bigint "user_id", null: false
+    t.string "user_agent"
+    t.string "ip_address"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
   create_table "transactions", force: :cascade do |t|
@@ -46,6 +80,18 @@ ActiveRecord::Schema[7.0].define(version: 2023_07_27_034812) do
     t.index ["description", "amount", "transaction_date"], name: "index_transactions_on_desc_amount_date", unique: true
   end
 
+  create_table "users", force: :cascade do |t|
+    t.string "email", null: false
+    t.string "password_digest", null: false
+    t.boolean "verified", default: false, null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["email"], name: "index_users_on_email", unique: true
+  end
+
+  add_foreign_key "email_verification_tokens", "users"
   add_foreign_key "goals", "categories"
+  add_foreign_key "password_reset_tokens", "users"
+  add_foreign_key "sessions", "users"
   add_foreign_key "transactions", "categories"
 end
