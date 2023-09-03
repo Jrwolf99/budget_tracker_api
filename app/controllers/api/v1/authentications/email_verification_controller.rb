@@ -1,4 +1,4 @@
-class Api::V1::EmailVerificationController < ApplicationController
+class Api::V1::Authentications::EmailVerificationController < ApplicationController
   skip_before_action :authenticate, only: :show
 
   before_action :set_user, only: :show

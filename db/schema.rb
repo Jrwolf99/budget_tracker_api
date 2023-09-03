@@ -10,16 +10,9 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_08_30_043408) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_03_172237) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
-
-  create_table "categories", force: :cascade do |t|
-    t.string "category_name", limit: 50, null: false
-    t.datetime "created_at", null: false
-    t.datetime "updated_at", null: false
-    t.string "identifier"
-  end
 
   create_table "delayed_jobs", force: :cascade do |t|
     t.integer "priority", default: 0, null: false
@@ -42,14 +35,15 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_30_043408) do
   end
 
   create_table "goals", force: :cascade do |t|
-    t.integer "month", null: false
-    t.integer "year", null: false
-    t.bigint "category_id", null: false
-    t.decimal "goal_amount", precision: 10, scale: 2
+    t.string "name"
+    t.decimal "target_value"
+    t.integer "month"
+    t.integer "year"
+    t.bigint "spend_account_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["category_id", "month", "year"], name: "index_goals_on_category_id_and_month_and_year", unique: true
-    t.index ["category_id"], name: "index_goals_on_category_id"
+    t.index ["month", "year", "spend_account_id"], name: "index_goals_on_month_and_year_and_spend_account_id", unique: true
+    t.index ["spend_account_id"], name: "index_goals_on_spend_account_id"
   end
 
   create_table "password_reset_tokens", force: :cascade do |t|
@@ -66,18 +60,32 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_30_043408) do
     t.index ["user_id"], name: "index_sessions_on_user_id"
   end
 
-  create_table "transactions", force: :cascade do |t|
-    t.string "description"
-    t.decimal "amount"
+  create_table "spend_accounts", force: :cascade do |t|
+    t.bigint "user_id", null: false
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.date "transaction_date"
-    t.string "notes", limit: 50
-    t.integer "year"
-    t.integer "month"
-    t.bigint "category_id"
-    t.index ["category_id"], name: "index_transactions_on_category_id"
-    t.index ["description", "amount", "transaction_date"], name: "index_transactions_on_desc_amount_date", unique: true
+    t.index ["user_id"], name: "index_spend_accounts_on_user_id"
+  end
+
+  create_table "spend_categories", force: :cascade do |t|
+    t.string "name", null: false
+    t.string "identifier", null: false
+    t.boolean "is_standard_expense", default: false, null: false
+    t.boolean "is_needed"
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+  end
+
+  create_table "spends", force: :cascade do |t|
+    t.bigint "spend_category_id", null: false
+    t.bigint "spend_account_id", null: false
+    t.string "description", null: false
+    t.decimal "amount", null: false
+    t.date "date_of_spend", null: false
+    t.datetime "created_at", null: false
+    t.datetime "updated_at", null: false
+    t.index ["spend_account_id"], name: "index_spends_on_spend_account_id"
+    t.index ["spend_category_id"], name: "index_spends_on_spend_category_id"
   end
 
   create_table "users", force: :cascade do |t|
@@ -90,8 +98,10 @@ ActiveRecord::Schema[7.0].define(version: 2023_08_30_043408) do
   end
 
   add_foreign_key "email_verification_tokens", "users"
-  add_foreign_key "goals", "categories"
+  add_foreign_key "goals", "spend_accounts"
   add_foreign_key "password_reset_tokens", "users"
   add_foreign_key "sessions", "users"
-  add_foreign_key "transactions", "categories"
+  add_foreign_key "spend_accounts", "users"
+  add_foreign_key "spends", "spend_accounts"
+  add_foreign_key "spends", "spend_categories"
 end

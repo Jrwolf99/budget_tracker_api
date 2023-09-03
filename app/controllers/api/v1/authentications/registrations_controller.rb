@@ -1,4 +1,4 @@
-class Api::V1::RegistrationsController < ApplicationController
+class Api::V1::Authentications::RegistrationsController < ApplicationController
   skip_before_action :authenticate
 
   def create
@@ -6,6 +6,8 @@ class Api::V1::RegistrationsController < ApplicationController
 
     if @user.save
       send_email_verification
+      SpendAccount.create!(user: @user)
+
       render json: @user, status: :created
     else
       render json: @user.errors, status: :unprocessable_entity

@@ -28,12 +28,9 @@ class Mailers::AuthMailer < Mailers::RootMailer
 
   def send_password_reset_email
     signed_id = user.password_reset_tokens.create.signed_id(expires_in: 20.minutes)
-
   end
     
     private
-  
-
     def app_host
       ENV.fetch('FRONTEND_DOMAIN', nil)
     end

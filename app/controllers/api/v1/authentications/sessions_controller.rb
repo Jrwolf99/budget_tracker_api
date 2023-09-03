@@ -1,4 +1,4 @@
-class Api::V1::SessionsController < ApplicationController
+class Api::V1::Authentications::SessionsController < ApplicationController
   skip_before_action :authenticate, only: :create
 
   before_action :set_session, only: %i[ show destroy ]
@@ -29,7 +29,14 @@ class Api::V1::SessionsController < ApplicationController
   end
 
   private
+
+    
     def set_session
-      @session = Current.user.sessions.find(params[:id])
+      begin
+        @session = Current.user.sessions.find_signed(params[:signed_id])
+      rescue ActiveSupport::MessageVerifier::InvalidSignature
+        render json: { error: "Invalid session token" }, status: :unauthorized
+      end
     end
+  
 end
