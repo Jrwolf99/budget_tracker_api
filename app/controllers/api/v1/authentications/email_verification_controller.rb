@@ -4,7 +4,14 @@ class Api::V1::Authentications::EmailVerificationController < ApplicationControl
   before_action :set_user, only: :show
 
   def show
-    @user.update!(verified: true); head(:no_content)
+    
+    if @user.update!(verified: true)
+      render json: { message: "Your email has been verified" }, status: :ok
+    else
+      head :bad_request
+    end
+    
+
   end
 
   def create

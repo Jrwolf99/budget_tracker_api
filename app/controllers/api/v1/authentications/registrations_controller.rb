@@ -3,12 +3,13 @@ class Api::V1::Authentications::RegistrationsController < ApplicationController
 
   def create
     @user = User.new(user_params)
+    if @user.save!
 
-    if @user.save
       send_email_verification
+     
       SpendAccount.create!(user: @user)
 
-      render json: @user, status: :created
+      render json: {message: "User created!", user: @user}, status: :created
     else
       render json: @user.errors, status: :unprocessable_entity
     end

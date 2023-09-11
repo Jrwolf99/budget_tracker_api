@@ -4,9 +4,6 @@ Rails.application.routes.draw do
   namespace :api do
     namespace :v1 do
       
-
-      
-      
       namespace :authentications do
         post "sign_in", to: "sessions#create"
         delete "sign_out", to: "sessions#destroy"
@@ -42,14 +39,22 @@ Rails.application.routes.draw do
       end
 
 
+      namespace :spend_accounts do
+        get 'show_spends' 
+        post 'upload_spends_through_CSV'
+        get 'get_years_overview_report'
+      end
 
+      namespace :spend_categories do
+        get 'show_spend_categories_all'
+        get 'show_spend_categories_standard_expenses'
+      end
 
+      namespace :spends do
+        put 'update_spend_notes'
+        put 'update_spend_category'
+      end
 
-
-
-
-    
-  
    
     end
   end
