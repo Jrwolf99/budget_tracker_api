@@ -9,11 +9,6 @@ class SpendAccount < ApplicationRecord
     def upload_spends_through_CSV(file)
         csv_source = calculate_csv_source(file)
         raise "wrong csv source" if csv_source == 'wrong_csv_source'
-
-
-      
-
-
         case csv_source
         when 'capital_one_checking'
             return SpendProcessors::SpendProcessorCapitalOneChecking.new(file, self).create_spends
@@ -33,11 +28,12 @@ class SpendAccount < ApplicationRecord
         spend_category_identifier = conditions[:spend_category_identifier]
 
         if spend_category_identifier == 'all'
-            return self.spends
+            return self.spends.in_month_and_year(conditions[:month], conditions[:year])
         elsif spend_category_identifier == 'uncategorized'
-            return self.spends.where(spend_category_id: nil)
+            return self.spends.in_month_and_year(conditions[:month], conditions[:year]).where(spend_category_id: nil)
         elsif spend_category_identifier.present?
-            return self.spends.where(spend_category_id: SpendCategory.find_by_identifier(spend_category_identifier).id)
+            return self.spends.in_month_and_year(conditions[:month], conditions[:year])
+                              .where(spend_category_id: SpendCategory.find_by_identifier(spend_category_identifier).id)
         else
             raise "wrong spend_category_identifier"
         end
