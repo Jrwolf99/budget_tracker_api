@@ -10,11 +10,15 @@ class SpendAccount < ApplicationRecord
         csv_source = calculate_csv_source(file)
         raise "wrong csv source" if csv_source == 'wrong_csv_source'
 
+
+      
+
+
         case csv_source
         when 'capital_one_checking'
             return SpendProcessors::SpendProcessorCapitalOneChecking.new(file, self).create_spends
         when 'capital_one_credit'
-            # SpendProcessors::SpendProcessorCapitalOneCredit.new(file, self).create_spends
+            SpendProcessors::SpendProcessorCapitalOneCredit.new(file, self).create_spends
         end
        
     end
@@ -37,14 +41,9 @@ class SpendAccount < ApplicationRecord
         else
             raise "wrong spend_category_identifier"
         end
-
-
-
-
     end
 
     private 
-
 
     def calculate_csv_source(file)
         CSV.open(file.path, headers: true) do |csv|
