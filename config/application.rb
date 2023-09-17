@@ -1,8 +1,8 @@
-require_relative "boot"
+require_relative 'boot'
 
 require 'dotenv/load'
 
-require "rails/all"
+require 'rails/all'
 
 # Require the gems listed in Gemfile, including any gems
 # you've limited to :test, :development, or :production.
@@ -15,23 +15,18 @@ module BudgetTrackerApi
 
     config.middleware.use ActionDispatch::Cookies
     config.middleware.use ActionDispatch::Session::CookieStore
-    
 
     config.middleware.insert_before 0, Rack::Cors do
       allow do
-        origins '*'  # Update this with the allowed origin(s) if you have a specific domain you want to allow.
-        resource '*', 
-          headers: :any, 
-          methods: [:get, :post, :put, :patch, :delete, :options, :head],
-          expose: ['X-Session-Token'] 
+        origins '*' # Update this with the allowed origin(s) if you have a specific domain you want to allow.
+        resource '*',
+                 headers: :any,
+                 methods: %i[get post put patch delete options head],
+                 expose: ['X-Session-Token']
       end
     end
-    
-    
 
     config.active_job.queue_adapter = :delayed_job
-
-
 
     # Configuration for the application, engines, and railties goes here.
     #

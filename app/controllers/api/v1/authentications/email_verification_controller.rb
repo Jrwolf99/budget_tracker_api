@@ -4,14 +4,11 @@ class Api::V1::Authentications::EmailVerificationController < ApplicationControl
   before_action :set_user, only: :show
 
   def show
-    
     if @user.update!(verified: true)
-      render json: { message: "Your email has been verified" }, status: :ok
+      render json: { message: 'Your email has been verified' }, status: :ok
     else
       head :bad_request
     end
-    
-
   end
 
   def create
@@ -19,10 +16,11 @@ class Api::V1::Authentications::EmailVerificationController < ApplicationControl
   end
 
   private
-    def set_user
-      token = EmailVerificationToken.find_signed!(params[:sid])
-      @user = token.user
-    rescue StandardError
-      render json: { error: "That email verification link is invalid" }, status: :bad_request
-    end
+
+  def set_user
+    token = EmailVerificationToken.find_signed!(params[:sid])
+    @user = token.user
+  rescue StandardError
+    render json: { error: 'That email verification link is invalid' }, status: :bad_request
+  end
 end

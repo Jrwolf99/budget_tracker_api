@@ -6,21 +6,22 @@ class Api::V1::Authentications::RegistrationsController < ApplicationController
     if @user.save!
 
       send_email_verification
-     
+
       SpendAccount.create!(user: @user)
 
-      render json: {message: "User created!", user: @user}, status: :created
+      render json: { message: 'User created!', user: @user }, status: :created
     else
       render json: @user.errors, status: :unprocessable_entity
     end
   end
 
   private
-    def user_params
-      params.permit(:email, :password, :password_confirmation)
-    end
 
-    def send_email_verification
-      Mailers::AuthMailer.new.send_email_verification_email(@user)
-    end
+  def user_params
+    params.permit(:email, :password, :password_confirmation)
+  end
+
+  def send_email_verification
+    Mailers::AuthMailer.new.send_email_verification_email(@user)
+  end
 end
