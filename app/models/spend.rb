@@ -12,4 +12,6 @@ class Spend < ApplicationRecord
   }
 
   scope :is_standard_expense, -> { joins(:spend_category).where(spend_categories: { is_standard_expense: true }) }
+
+  scope :is_income, -> { where(spend_category_id: SpendCategory.find_by_identifier('income').id) }
 end

@@ -8,11 +8,13 @@ module Api
         condition_attributes = params.permit(:spend_category_identifier, :month, :year)
         results = spend_account.show_spends(condition_attributes).order(date_of_spend: :desc)
 
-        total_spent = results.sum(&:amount)
+        total_spent = results.is_standard_expense.sum(:amount).abs.to_f
+
+        total_earned = results.is_income.sum(:amount).abs.to_f
 
         render json: results,
                root: 'spends',
-               meta: { total_spent: },
+               meta: { total_spent:, total_earned: },
                adapter: :json,
                status: :ok
       end
@@ -26,7 +28,7 @@ module Api
         spend_account = get_spend_account(params[:user_id])
         report = spend_account.years_overview_report(params[:year])
         if report
-          render json: report
+          render json: report, status: :ok
         else
           head :no_content
         end

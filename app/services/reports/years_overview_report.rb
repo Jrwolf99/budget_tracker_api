@@ -8,7 +8,7 @@ module Reports
     end
 
     def generate
-      years_expenses.keys.map do |key|
+      months = years_expenses.keys.map do |key|
         {
           key:,
           month_name: Date.parse(key.to_s).strftime('%B'),
@@ -17,7 +17,13 @@ module Reports
           month_profit: years_profit[key].to_f,
           month_margin_percentage: "#{years_margin_percentages[key]}%"
         }
-      end.sort_by { |month| month[:key] }
+      end.sort_by { |month| month[:key] }.reverse
+
+      {
+        months: months,
+        totals: totals
+      }
+
     end
 
     private
@@ -48,5 +54,15 @@ module Reports
       # profit / income
       years_profit.merge(years_income) { |_key, profit, income| (profit * 100 / income).round(0) }
     end
+
+    def totals
+      {
+        total_expenses: years_expenses.values.sum.to_f,
+        total_income: years_income.values.sum.to_f,
+        total_profit: years_profit.values.sum.to_f,
+        total_margin_percentage: "#{years_margin_percentages.values.sum / years_margin_percentages.values.count}%"
+      }
+    end
+
   end
 end
