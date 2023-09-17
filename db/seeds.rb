@@ -1,3 +1,5 @@
+# frozen_string_literal: true
+
 categories = {
   "groceries_food": {
     "name": 'Groceries',
