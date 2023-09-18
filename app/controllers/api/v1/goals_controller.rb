@@ -8,7 +8,8 @@ module Api
         my_goal = my_spend_account.goals.find_or_initialize_by(month: params[:month], year: params[:year], spend_category_id: params[:spend_category_id])
 
         my_goal.target_value = params[:target_value]
-        if my_goal.save
+
+        if my_goal.save!
           render json: my_goal, status: :ok
         else
           render json: my_goal.errors, status: :unprocessable_entity

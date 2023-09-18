@@ -26,7 +26,7 @@ module Reports
         {
           category_id: category_id_and_name[0],
           category_name: category_id_and_name[1],
-          goal: 1000,
+          goal: goal_for_category(category_id_and_name[0])&.target_value || 0,
           value: value.abs.to_f.round(2),
           percentage: (value.abs / standard_expense_gross_total.abs * 100).round(2)
         }
@@ -39,5 +39,13 @@ module Reports
                     .in_month_and_year(@month, @year)
                     .sum(:amount)
     end
+
+
+    def goal_for_category(category_id)
+      @spend_account.goals.find_by(month: @month, year: @year, spend_category_id: category_id)
+    end
+
+
+
   end
 end
