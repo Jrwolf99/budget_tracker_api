@@ -8,11 +8,9 @@ module Api
 
         def create
           @user = User.new(user_params)
-          if @user.save!
+          if @user.save! && SpendAccount.create!(user: @user)
 
             send_email_verification
-
-            SpendAccount.create!(user: @user)
 
             render json: { message: 'User created!', user: @user }, status: :created
           else
