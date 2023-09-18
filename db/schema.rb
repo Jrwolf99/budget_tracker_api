@@ -35,15 +35,16 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_10_154256) do
   end
 
   create_table "goals", force: :cascade do |t|
-    t.string "name"
     t.decimal "target_value"
     t.integer "month"
     t.integer "year"
     t.bigint "spend_account_id"
+    t.bigint "spend_category_id"
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
-    t.index ["month", "year", "spend_account_id"], name: "index_goals_on_month_and_year_and_spend_account_id", unique: true
+    t.index ["month", "year", "spend_account_id", "spend_category_id"], name: "index_goals", unique: true
     t.index ["spend_account_id"], name: "index_goals_on_spend_account_id"
+    t.index ["spend_category_id"], name: "index_goals_on_spend_category_id"
   end
 
   create_table "password_reset_tokens", force: :cascade do |t|
@@ -100,6 +101,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_10_154256) do
 
   add_foreign_key "email_verification_tokens", "users"
   add_foreign_key "goals", "spend_accounts"
+  add_foreign_key "goals", "spend_categories"
   add_foreign_key "password_reset_tokens", "users"
   add_foreign_key "sessions", "users"
   add_foreign_key "spend_accounts", "users"

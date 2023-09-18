@@ -53,6 +53,10 @@ Rails.application.routes.draw do
         put 'update_spend_notes'
         put 'update_spend_category'
       end
+
+      namespace :goals do
+        post 'create_or_update_goal'
+      end
     end
   end
 end

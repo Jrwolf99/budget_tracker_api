@@ -34,4 +34,13 @@ class ApplicationController < ActionController::API
 
     @current_user
   end
+
+  def get_spend_account(user_id)
+    my_user = User.find(user_id)
+    spend_account = my_user.spend_account
+    spend_account_permission_check(spend_account)
+    spend_account
+  end
+
+
 end
