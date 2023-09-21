@@ -36,7 +36,7 @@ module Api
 
       def get_totals_by_category_report
         spend_account = get_spend_account(params[:user_id])
-        report = spend_account.totals_by_category_report(params[:year], params[:month])
+        report = spend_account.totals_by_category_report(params[:year], params[:month], params[:report_type])
         if report
           render json: report
         else

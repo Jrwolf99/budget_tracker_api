@@ -23,8 +23,8 @@ class SpendAccount < ApplicationRecord
     Reports::YearsOverviewReport.new(year, self).generate
   end
 
-  def totals_by_category_report(year, month)
-    Reports::TotalsByCategoryReport.new(year, month, self).generate
+  def totals_by_category_report(year, month, report_type)
+    Reports::TotalsByCategoryReport.new(year, month, self, report_type).generate
   end
 
   def show_spends(conditions)
