@@ -27,14 +27,13 @@ module Reports
     private
 
     def category_totals_of_standard_expenses(group_by_thing)
-      results = @spend_account.spends
+      groups = @spend_account.spends
                               .is_standard_expense
                               .in_month_and_year(@month, @year)
                               .joins(:spend_category)
                               .group(group_by_thing)
                               .sum(:amount)
-
-      results.map do |group_by_thing_identifier, value|
+      results = groups.map do |group_by_thing_identifier, value|
         {
           identifier: group_by_thing_identifier,
           label: group_by_thing_identifier,
@@ -43,6 +42,12 @@ module Reports
           percentage: (value.abs / standard_expense_gross_total.abs * 100).round(2),
           list_of_included_categories: SpendCategory.where(group_by_thing => group_by_thing_identifier).pluck(:name)
         }
+      end
+
+      if group_by_thing != 'spend_categories.is_needed'
+        results.sort_by { |result| result[:identifier] }
+      else
+        results
       end
     end
 
