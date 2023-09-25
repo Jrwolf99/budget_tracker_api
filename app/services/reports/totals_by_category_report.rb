@@ -34,9 +34,16 @@ module Reports
                               .group(group_by_thing)
                               .sum(:amount)
       results = groups.map do |group_by_thing_identifier, value|
+        if group_by_thing == 'spend_categories.is_needed'
+          group_by_thing_identifier = group_by_thing_identifier ? 'needs' : 'wants'
+        end
+
+        if group_by_thing == 'spend_categories.is_standard_expense'
+          group_by_thing_identifier  = 'all_standard_expenses'
+        end
         {
           identifier: group_by_thing_identifier,
-          label: group_by_thing_identifier,
+          label: group_by_thing_identifier.to_s.humanize,
           goal: goal_for_category(SpendCategory.where(group_by_thing => group_by_thing_identifier).pluck(:id)),
           value: value.abs.to_f.round(2),
           percentage: (value.abs / standard_expense_gross_total.abs * 100).round(2),
