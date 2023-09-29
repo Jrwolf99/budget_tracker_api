@@ -12,7 +12,7 @@ module Reports
     def generate
       case @report_type
       when 'granular'
-        category_totals_of_standard_expenses('spend_categories.name')
+        category_totals_of_standard_expenses('spend_categories.identifier')
       when 'broader'
         category_totals_of_standard_expenses('spend_categories.broad_identifier')
       when 'wants_needs'
