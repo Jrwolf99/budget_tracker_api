@@ -36,15 +36,19 @@ module Api
 
       def get_totals_by_category_report
         spend_account = get_spend_account(params[:user_id])
-        report = spend_account.totals_by_category_report(params[:year], params[:month], params[:report_type])
+        report_params = params.permit(:year, :month, :report_type, :only_needs_or_only_wants)
+        report = Reports::TotalsByCategoryReport.new(spend_account:, report_params:).generate
         if report
           render json: report
         else
           head :no_content
         end
+
+
+
       end
 
-    
+
     end
   end
 end
