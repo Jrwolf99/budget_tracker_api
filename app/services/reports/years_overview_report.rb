@@ -12,6 +12,7 @@ module Reports
         {
           key:,
           month_name: Date.parse(key.to_s).strftime('%B'),
+          month_number: Date.parse(key.to_s).strftime('%m').to_i,
           month_expenses: years_expenses[key].to_f,
           month_income: years_income[key].to_f,
           month_profit: years_profit[key].to_f,
