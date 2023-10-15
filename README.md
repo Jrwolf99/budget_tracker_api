@@ -2,6 +2,7 @@
 
 Budget Tracker API
 
+
 ### Setting up the app (macOS)
  1) Install ruby 3.1.3 - use [asdf](https://asdf-vm.com/).
  2) Install [Postgres](https://www.postgresql.org/).
