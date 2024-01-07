@@ -1,0 +1,1 @@
+SpendCategory.create!(name: "Needed Activities", identifier: "needed_activities", is_standard_expense: false)
