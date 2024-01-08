@@ -85,6 +85,19 @@ Rails.application.configure do
     config.logger    = ActiveSupport::TaggedLogging.new(logger)
   end
 
+
+    # Rack::Cors configuration
+    config.middleware.insert_before 0, Rack::Cors do
+      allow do
+        origins ENV['FRONTEND_DOMAIN']
+        resource '*', 
+          headers: :any, 
+          methods: %i[get post put patch delete options head] # Specify the HTTP verbs allowed
+      end
+    end
+
+
+
   # Do not dump schema after migrations.
   config.active_record.dump_schema_after_migration = false
 end

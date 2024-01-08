@@ -2,20 +2,18 @@ default: &default
   adapter: postgresql
   encoding: unicode
   pool: <%= ENV.fetch("RAILS_MAX_THREADS") { 5 } %>
-  host: localhost
-  username: <%= ENV['DB_USERNAME'] %>
-  password: <%= ENV['DB_PASSWORD'] %>
 
 development:
   <<: *default
   database: budget_tracker_api_db_dev
+  host: localhost
 
 test:
   <<: *default
   database: budget_tracker_api_db_test
+  host: localhost
 
 production:
   <<: *default
-  database: budget_tracker_api_db_prod
-  username: my_api
-  password: <%= ENV['DATABASE_PASSWORD'] %>
+  url: <%= ENV['DATABASE_URL'] %> # Utilizing the full DATABASE_URL provided by Railway
+
