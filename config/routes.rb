@@ -14,6 +14,11 @@ Rails.application.routes.draw do
           delete 'destroy'
         end
 
+        namespace :users do
+          get 'show'
+          patch 'update'
+        end
+
         namespace :password do
           get 'edit'
           patch 'update'
@@ -35,6 +40,8 @@ Rails.application.routes.draw do
           patch 'update'
         end
       end
+
+
 
       namespace :spend_accounts do
         get 'show_spends'
