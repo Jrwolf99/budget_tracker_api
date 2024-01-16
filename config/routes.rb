@@ -29,8 +29,7 @@ Rails.application.routes.draw do
           post 'create'
         end
 
-        namespace :password_reset do
-          get 'new'
+        namespace :password_resets do
           get 'edit'
           post 'create'
           patch 'update'

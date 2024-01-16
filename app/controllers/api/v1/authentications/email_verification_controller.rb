@@ -4,7 +4,7 @@ module Api
   module V1
     module Authentications
       class EmailVerificationController < ApplicationController
-        skip_before_action :authenticate, only: :show
+        skip_before_action :authenticate, only: %i[show]
 
         before_action :set_user, only: :show
 
@@ -17,7 +17,7 @@ module Api
         end
 
         def create
-          Mailers::AuthMailer.send_email_verification_email(Current.user)
+          Mailers::AuthMailer.new.send_email_verification_email(Current.user)
         end
 
         private
