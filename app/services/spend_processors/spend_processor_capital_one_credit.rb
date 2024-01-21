@@ -13,18 +13,12 @@ module SpendProcessors
         amount = row['Credit'].to_f
       end
 
-      my_spend = Spend.find_or_initialize_by(
-        spend_account_id: spend_account.id,
-        amount:,
-        description: row['Description'],
-        date_of_spend: Date.strptime(row['Transaction Date'], '%Y-%m-%d')
-      )
-      if my_spend.new_record?
-        my_spend.save!
-        @created_count += 1
-      else
-        @duplicate_count += 1
-      end
+      my_date = Date.strptime(row['Transaction Date'], '%Y-%m-%d')
+      my_amount = amount
+      my_description = row['Description']
+      my_last_four = row['Account Number']
+
+      save_spend(my_date, my_amount, my_description, my_last_four)
     end
   end
 end

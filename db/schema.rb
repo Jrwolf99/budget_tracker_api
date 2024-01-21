@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_09_21_025038) do
+ActiveRecord::Schema[7.0].define(version: 2024_01_20_235323) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "plpgsql"
 
@@ -87,6 +87,9 @@ ActiveRecord::Schema[7.0].define(version: 2023_09_21_025038) do
     t.datetime "created_at", null: false
     t.datetime "updated_at", null: false
     t.string "notes"
+    t.datetime "locked_from_importer_at"
+    t.string "import_combo_identifier"
+    t.string "last_four"
     t.index ["spend_account_id"], name: "index_spends_on_spend_account_id"
     t.index ["spend_category_id"], name: "index_spends_on_spend_category_id"
   end

@@ -41,8 +41,6 @@ Rails.application.routes.draw do
         end
       end
 
-
-
       namespace :spend_accounts do
         get 'show_spends'
         post 'upload_spends_through_CSV'
@@ -56,8 +54,7 @@ Rails.application.routes.draw do
       end
 
       namespace :spends do
-        put 'update_spend_notes'
-        put 'update_spend_category'
+        put 'update'
       end
 
       namespace :goals do

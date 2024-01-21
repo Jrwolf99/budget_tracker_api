@@ -1,9 +1,7 @@
 # frozen_string_literal: true
 
 class SpendSerializer < ActiveModel::Serializer
-  attributes :id, :date_of_spend, :amount, :description, :spend_category_identifier, :notes
+  attributes :id, :date_of_spend, :amount, :description, :notes, :last_four
 
-  def spend_category_identifier
-    object.spend_category&.identifier
-  end
+  belongs_to :spend_category
 end
