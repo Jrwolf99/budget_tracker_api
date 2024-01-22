@@ -6,10 +6,7 @@ module Api
       def update
         my_spend = Spend.find(spend_params[:id])
 
-        if spend_category_params[:identifier].present?
-          spend_category = SpendCategory.find_by(identifier: spend_category_params[:identifier])
-          my_spend.update(spend_category_id: spend_category.id)
-        end
+        update_spend_category(my_spend) if params[:spend_category].present?
 
         if my_spend.update(spend_params)
           my_spend.update(locked_from_importer_at: Time.now) if spend_params[:date_of_spend].present?
@@ -20,6 +17,11 @@ module Api
       end
 
       private
+
+      def update_spend_category(my_spend)
+        spend_category = SpendCategory.find_by(identifier: spend_category_params[:identifier])
+        my_spend.update(spend_category_id: spend_category.id)
+      end
 
       def spend_params
         params.require(:spend).permit(:id, :date_of_spend, :amount, :notes)
