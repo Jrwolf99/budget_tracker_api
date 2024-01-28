@@ -7,6 +7,18 @@ module Api
         skip_before_action :authenticate
 
         def create
+          if params[:is_guest] == 'true'
+            @user = User.find_by(email: '', password: '')
+            user = User.find_by(email: params[:email])
+
+            if user&.authenticate(params[:password])
+              @session = user.sessions.create!
+              response.set_header 'X-Session-Token', @session.signed_id
+              render json: @session, status: :created
+              return
+            end
+          end
+
           @user = User.new(user_params)
           if @user.save! && SpendAccount.create!(user: @user)
 
