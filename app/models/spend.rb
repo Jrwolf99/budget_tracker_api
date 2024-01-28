@@ -14,4 +14,14 @@ class Spend < ApplicationRecord
   scope :is_standard_expense, -> { joins(:spend_category).where(spend_categories: { is_standard_expense: true }) }
 
   scope :is_income, -> { where(spend_category_id: SpendCategory.find_by_identifier('income').id) }
+
+  scope :with_category_identifier, lambda { |identifier|
+                                   if identifier == 'all'
+                                     all
+                                   elsif identifier == 'uncategorized'
+                                     where(spend_category_id: nil)
+                                   else
+                                     where(spend_category_id: SpendCategory.find_by_identifier(identifier)&.id)
+                                   end
+                                 }
 end

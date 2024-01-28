@@ -19,23 +19,9 @@ class SpendAccount < ApplicationRecord
     end
   end
 
-  def years_overview_report(year)
-    Reports::YearsOverviewReport.new(year, self).generate
-  end
-
   def show_spends(conditions)
-    spend_category_identifier = conditions[:spend_category_identifier]
-
-    if spend_category_identifier == 'all'
-      spends.in_month_and_year(conditions[:month], conditions[:year])
-    elsif spend_category_identifier == 'uncategorized'
-      spends.in_month_and_year(conditions[:month], conditions[:year]).where(spend_category_id: nil)
-    elsif spend_category_identifier.present?
-      spends.in_month_and_year(conditions[:month], conditions[:year])
-            .where(spend_category_id: SpendCategory.find_by_identifier(spend_category_identifier).id)
-    else
-      raise 'wrong spend_category_identifier'
-    end
+    spends.in_month_and_year(conditions[:month],
+                             conditions[:year]).with_category_identifier(conditions[:spend_category_identifier])
   end
 
   private

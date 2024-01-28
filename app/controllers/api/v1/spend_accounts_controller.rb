@@ -26,7 +26,9 @@ module Api
 
       def get_years_overview_report
         spend_account = get_spend_account(params[:user_id])
-        report = spend_account.years_overview_report(params[:year])
+
+        report = Reports::YearsOverviewReport.new(spend_account, params[:year], params[:spend_category_identifier]).generate
+
         if report
           render json: report, status: :ok
         else
