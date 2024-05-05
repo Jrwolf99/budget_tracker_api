@@ -16,7 +16,7 @@ module SpendProcessors
       my_date = Date.strptime(row['Transaction Date'], '%Y-%m-%d')
       my_amount = amount
       my_description = row['Description']
-      my_last_four = row['Account Number']
+      my_last_four = row['Card No.']
 
       save_spend(my_date, my_amount, my_description, my_last_four)
     end
