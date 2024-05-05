@@ -8,9 +8,9 @@ module SpendProcessors
       return if row['Transaction Date'].blank?
 
       if row['Debit'].present?
-        amount = row['Debit'].to_f * -1
+        amount = row['Debit'].to_f.abs * -1
       elsif row['Credit'].present?
-        amount = row['Credit'].to_f
+        amount = row['Credit'].to_f.abs
       end
 
       my_date = Date.strptime(row['Transaction Date'], '%Y-%m-%d')
