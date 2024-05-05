@@ -9,11 +9,11 @@ module SpendProcessors
       my_description = row['Transaction Description']
       my_last_four = row['Account Number']
 
-      if row['Transaction Type'] == 'Debit'
-        row['Transaction Amount'].to_f.abs * -1
-      else
-        row['Transaction Amount'].to_f.abs
-      end
+      my_amount = if row['Transaction Type'] == 'Debit'
+                    row['Transaction Amount'].to_f.abs * -1
+                  else
+                    row['Transaction Amount'].to_f.abs
+                  end
 
       save_spend(my_date, my_amount, my_description, my_last_four)
     end
