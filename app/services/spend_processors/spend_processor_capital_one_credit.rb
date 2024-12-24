@@ -4,6 +4,19 @@ require 'csv'
 
 module SpendProcessors
   class SpendProcessorCapitalOneCredit < SpendProcessors::RootSpendProcessor
+    def create_spends
+      @created_count = 0
+      @duplicate_count = 0
+      @locked_count = 0
+
+      CSV.foreach(imported_file, headers: true) do |row|
+        process_row(row)
+      end
+      { created_count: @created_count,
+        duplicate_count: @duplicate_count,
+        locked_count: @locked_count }
+    end
+  
     def process_row(row)
       return if row['Transaction Date'].blank?
 

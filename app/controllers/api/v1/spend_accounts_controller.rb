@@ -19,9 +19,9 @@ module Api
                status: :ok
       end
 
-      def upload_spends_through_CSV
+      def upload_spends
         spend_account = get_spend_account(params[:user_id])
-        render json: spend_account.upload_spends_through_CSV(params[:file])
+        render json: spend_account.upload_spends(params[:file])
       end
 
       def get_years_overview_report

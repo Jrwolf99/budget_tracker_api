@@ -43,7 +43,7 @@ Rails.application.routes.draw do
 
       namespace :spend_accounts do
         get 'show_spends'
-        post 'upload_spends_through_CSV'
+        post 'upload_spends'
         get 'get_years_overview_report'
         get 'get_totals_by_category_report'
       end
