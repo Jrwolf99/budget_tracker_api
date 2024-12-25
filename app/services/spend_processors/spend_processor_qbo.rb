@@ -12,8 +12,6 @@ module SpendProcessors
       qbo_content = File.read(imported_file)
       doc = Nokogiri::XML(qbo_content)
 
-      Rails.logger.info "Parsed XML Document: #{doc}"
-
       transactions = doc.xpath('//STMTTRN')
       account_id = extract_account_id(doc) # Extract the last 4 digits of <ACCTID>
 
