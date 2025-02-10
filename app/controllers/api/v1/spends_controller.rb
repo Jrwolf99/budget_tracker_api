@@ -36,10 +36,11 @@ module Api
         }
 
         ai_asker = Ai::AiAsker.new
-        spend_categories = SpendCategory.pluck(:identifier, :id).to_h
+
+        spend_categories = SpendCategory.pluck(:identifier, :name, :id).map { |identifier, name, id| { identifier:, name:, id: } }
 
         question_prompt = <<~PROMPT
-          Categories: [#{spend_categories.keys.join(', ')}]
+          Categories: #{spend_categories.map { |cat| { identifier: cat[:identifier].split(' ').first, name: cat[:identifier].split(' ').last, id: cat[:id] } }.to_json}
           Spends: #{spends.no_ai_suggested_spend_category.map { |spend| { id: spend.id, desc: spend.description } }.to_json}
           Assign each spend an appropriate category.
         PROMPT
@@ -52,7 +53,8 @@ module Api
           spend_id = response_item['spend_id']
           category_identifier = response_item['category_identifier']
           spend = spends.find { |s| s.id == spend_id.to_i }
-          spend.update(ai_suggested_spend_category_id: spend_categories[category_identifier])
+          category = spend_categories.find { |cat| cat[:identifier] == category_identifier }
+          spend.update(ai_suggested_spend_category_id: category[:id]) if category
         end
 
         render json: { message: 'Spends categorized' }

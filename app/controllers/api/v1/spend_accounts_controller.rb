@@ -6,7 +6,7 @@ module Api
       def show_spends
         spend_account = get_spend_account(params[:user_id])
         condition_attributes = params.permit(:spend_category_identifier, :month, :year)
-        results = spend_account.show_spends(condition_attributes).order(date_of_spend: :desc)
+        results = spend_account.show_spends(condition_attributes).order(date_of_spend: :desc, id: :desc)
 
         total_spent = results.is_standard_expense.sum(:amount).abs.to_f
 
