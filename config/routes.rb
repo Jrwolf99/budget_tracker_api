@@ -55,6 +55,7 @@ Rails.application.routes.draw do
 
       namespace :spends do
         put 'update'
+        post 'ai_categorize'
       end
 
       namespace :goals do

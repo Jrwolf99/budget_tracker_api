@@ -2,6 +2,7 @@
 
 class Spend < ApplicationRecord
   belongs_to :spend_category, optional: true
+  belongs_to :ai_suggested_spend_category, class_name: 'SpendCategory', optional: true
   belongs_to :spend_account
 
   scope :in_month_and_year, lambda { |month, year|
@@ -24,4 +25,6 @@ class Spend < ApplicationRecord
                                      where(spend_category_id: SpendCategory.find_by_identifier(identifier)&.id)
                                    end
                                  }
+
+  scope :no_ai_suggested_spend_category, -> { where(ai_suggested_spend_category_id: nil) }
 end
