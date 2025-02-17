@@ -30,7 +30,7 @@ class ApplicationController < ActionController::API
 
     @current_user = Current.session&.user
 
-    raise 'forbiddennnn' unless @current_user.present?
+    raise 'forbidden' unless @current_user.present?
 
     @current_user
   end

@@ -41,21 +41,19 @@ Rails.application.routes.draw do
         end
       end
 
-      namespace :spend_accounts do
-        get 'show_spends'
-        post 'upload_spends'
-        get 'get_years_overview_report'
-        get 'get_totals_by_category_report'
-      end
-
       namespace :spend_categories do
         get 'show_spend_categories_all'
         get 'show_spend_categories_standard_expenses'
       end
 
       namespace :spends do
+        get 'show_spends'
+        post 'upload_spends'
+        get 'get_years_overview_report'
+        get 'get_totals_by_category_report'
         put 'update'
         post 'ai_categorize'
+
       end
 
       namespace :goals do
