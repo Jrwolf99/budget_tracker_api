@@ -38,8 +38,8 @@ class Api::V1::SpendsController < ApplicationController
     end
 
     spends = spend_account.show_spends(params.permit(:spend_category_identifier, :month, :year))
-    result = Ai::SpendCategorizer.new(spends, spend_account).categorize
-    render json: { message: result[:message] }, status: result[:success] ? :ok : :unprocessable_entity
+    categorized_spends = Ai::SpendCategorizer.new(spends, spend_account).categorize
+    render json: categorized_spends, status: :ok
   end
 
   def years_overview_report
