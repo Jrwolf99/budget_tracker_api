@@ -2,6 +2,9 @@
 
 class ApplicationController < ActionController::API
   include ActionController::HttpAuthentication::Token::ControllerMethods
+  class Forbidden < StandardError; end
+
+  rescue_from Forbidden, with: :forbidden_render
 
   before_action :set_current_request_details
   before_action :authenticate
@@ -21,20 +24,6 @@ class ApplicationController < ActionController::API
     Current.ip_address = request.ip
   end
 
-  def spend_account_permission_check(spend_account)
-    raise 'forbidden' unless my_current_user.spend_account == spend_account
-  end
-
-  def my_current_user
-    return @current_user if @current_user.present?
-
-    @current_user = Current.session&.user
-
-    raise 'forbidden' unless @current_user.present?
-
-    @current_user
-  end
-
   def get_spend_account(user_id)
     my_user = User.find(user_id)
     spend_account = my_user.spend_account
@@ -42,5 +31,21 @@ class ApplicationController < ActionController::API
     spend_account
   end
 
+  def spend_account_permission_check(spend_account)
+    raise Forbidden unless my_current_user.spend_account == spend_account
+  end
 
+  def my_current_user
+    return @current_user if @current_user.present?
+
+    @current_user = Current.session&.user
+
+    raise Forbidden unless @current_user.present?
+
+    @current_user
+  end
+
+  def forbidden_render
+    render json: 'Forbidden', status: :forbidden
+  end
 end

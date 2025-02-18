@@ -1,11 +1,9 @@
 # frozen_string_literal: true
 
 class Api::V1::SpendsController < ApplicationController
-  before_action :spend_account_permission_check
-
   def index
     condition_attributes = params.permit(:spend_category_identifier, :month, :year)
-    results = @spend_account.show_spends(condition_attributes).order(date_of_spend: :desc, id: :desc)
+    results = spend_account.show_spends(condition_attributes).order(date_of_spend: :desc, id: :desc)
 
     total_spent = results.is_standard_expense.sum(:amount).abs.to_f
     total_earned = results.is_income.sum(:amount).abs.to_f
@@ -18,11 +16,11 @@ class Api::V1::SpendsController < ApplicationController
   end
 
   def upload
-    render json: @spend_account.upload_spends(params[:file])
+    render json: spend_account.upload_spends(params[:file])
   end
 
   def update
-    my_spend = Spend.find(spend_params[:id])
+    my_spend = spend_account.spends.find(spend_params[:id])
     update_spend_category(my_spend) if params[:spend_category].present?
 
     if my_spend.update(spend_params)
@@ -34,14 +32,19 @@ class Api::V1::SpendsController < ApplicationController
   end
 
   def ai_categorize
-    spends = Spend.where(spend_category_id: nil, id: params[:spend_ids])
-    result = Ai::SpendCategorizer.new(spends).categorize
+    unless params[:month].to_i.between?(1, 12)
+      render json: { message: 'Month must be between 1 and 12' }, status: :unprocessable_entity
+      return
+    end
+
+    spends = spend_account.show_spends(params.permit(:spend_category_identifier, :month, :year))
+    result = Ai::SpendCategorizer.new(spends, spend_account).categorize
     render json: { message: result[:message] }, status: result[:success] ? :ok : :unprocessable_entity
   end
 
   def years_overview_report
     report = Reports::YearsOverviewReport.new(
-      @spend_account,
+      spend_account,
       params[:year],
       params[:spend_category_identifier]
     ).generate
@@ -56,7 +59,7 @@ class Api::V1::SpendsController < ApplicationController
   def totals_by_category_report
     report_params = params.permit(:year, :month, :report_type, :only_needs_or_only_wants)
     report = Reports::TotalsByCategoryReport.new(
-      spend_account: @spend_account,
+      spend_account:,
       report_params:
     ).generate
 
@@ -69,9 +72,11 @@ class Api::V1::SpendsController < ApplicationController
 
   private
 
-  def spend_account_permission_check
-    @spend_account = SpendAccount.find(params[:spend_account_id])
-    super(@spend_account)
+  def spend_account
+    return @spend_account if @spend_account.present?
+
+    @spend_account = get_spend_account(params[:user_id])
+    @spend_account
   end
 
   def update_spend_category(my_spend)

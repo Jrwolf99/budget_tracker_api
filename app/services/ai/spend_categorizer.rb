@@ -1,10 +1,15 @@
 # frozen_string_literal: true
 
 class Ai::SpendCategorizer
-  def initialize(spends)
+  attr_reader :spend_account
+
+  def initialize(spends, spend_account)
     @spends = spends
+    @spend_account = spend_account
     @ai_asker = Ai::AiAsker.new
-    @spend_categories = SpendCategory.pluck(:identifier, :name, :id).map do |identifier, name, id|
+    @spend_categories = SpendCategory
+                        .where.not(identifier: %w[refunds savings])
+                        .pluck(:identifier, :name, :id).map do |identifier, name, id|
       { identifier:, name:, id: }
     end
   end
@@ -39,9 +44,23 @@ class Ai::SpendCategorizer
 
   def question_prompt
     <<~PROMPT
-      Categories: #{formatted_categories.to_json}
-      Spends: #{formatted_spends.to_json}
-      Assign each spend an appropriate category.
+      Your job is to categorize the following spends into the correct category.
+      Follow the Spend Account AI Rules. Say nil for the category if you cannot categorize the spend.#{' '}
+      Error on the side of caution. If you are not sure, say nil.
+      The Rules also have suggestions for how to categorize the spends.
+      Spend Account AI Rules: #{spend_account.ai_rules}
+
+      Also Use the past 60 categorized spends to help you categorize the new ones:
+      Past 60 Categorized Spends: #{formatted_past_60_categorized_spends.to_json}
+
+
+      Now, categorize the following spends into the correct category:
+
+
+        Categories: #{formatted_categories.to_json}
+        Spends: #{formatted_spends.to_json}
+
+        Assign each spend an appropriate category.
     PROMPT
   end
 
@@ -60,6 +79,16 @@ class Ai::SpendCategorizer
       {
         id: spend.id,
         desc: spend.description
+      }
+    end
+  end
+
+  def formatted_past_60_categorized_spends
+    spend_account.spends.where.not(spend_category_id: nil).order(date_of_spend: :desc).limit(60).map do |spend|
+      {
+        id: spend.id,
+        desc: spend.description,
+        category: spend.spend_category.identifier
       }
     end
   end
